@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aplikasi Prediksi 4D</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="header">
+    <img src="al.jpg" alt="Logo" class="logo"/>
+    <h1>Prediksi 4D - BU ALLAN</h1>
+    <div id="clock" class="clock"></div>
+  </header>
+
+  <section class="marquee-container">
+    <marquee behavior="scroll" direction="left">
+      🎯 Selamat datang di Aplikasi Prediksi 4D 🎯 Gunakan dengan bijak dan penuh tanggung jawab!
+    </marquee>
+  </section>
+
+  <main class="container">
+    <form id="predictionForm">
+      <div class="form-group">
+        <label for="tanggal">
+          Tanggal:
+          <span class="label-note">(format: YYYY-MM-DD)</span>
+        </label>
+        <input type="date" id="tanggal" required />
+      </div>
+
+      <div class="form-group">
+        <label for="pasaran">
+          Pilih Pasaran:
+          <span class="label-note">(misal: SDY, SGP, HKG)</span>
+        </label>
+        <select id="pasaran" required>
+          <option value="">-- Pilih Pasaran --</option>
+          <option value="SDY">SDY</option>
+          <option value="SGP">SGP</option>
+          <option value="HKG">HKG</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="result">
+          Masukkan Result 4D:
+          <span class="label-note">(angka otomatis akan keluar)</span>
+        </label>
+        <input type="text" id="result" maxlength="4" pattern="[0-9]{4}" required placeholder="Contoh: 5807"/>
+      </div>
+
+      <!-- SPINNER -->
+      <div id="loader" style="display:none; margin-top:10px; font-weight:bold; color:#333; text-align:center;">
+        ⏳ Sedang Mengambil data...Mohon Bersabar yah 😊😊😊
+      </div>
+
+      <div class="button-group">
+        <button type="submit">Proses</button>
+        <button type="button" id="resetBtn">Reset</button>
+        <button type="button" id="downloadBtn">Download PDF</button>
+      </div>
+    </form>
+
+    <section id="output" class="output"></section>
+  </main>
+
+  <footer class="footer">
+    <p>&copy; 2025 Aplikasi Prediksi 4D BU ALLAN</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
