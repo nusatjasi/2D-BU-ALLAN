@@ -1,3 +1,5 @@
+// script.js
+
 // Jam Digital
 function updateClock() {
   const now = new Date();
@@ -5,12 +7,6 @@ function updateClock() {
 }
 setInterval(updateClock, 1000);
 updateClock();
-
-// Fungsi Format Tanggal ke DD/MM/YYYY
-function formatTanggal(tgl) {
-  const [year, month, day] = tgl.split("-");
-  return `${day}/${month}/${year}`;
-}
 
 // Tabel Bahasa Online
 const tables = {
@@ -22,23 +18,26 @@ const tables = {
   m9:        { '0': '1', '1': '9', '2': '6', '3': '5', '4': '3', '5': '2', '6': '4', '7': '7', '8': '8', '9': '0' }
 };
 
-// URL Google Sheet CSV
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREhD2GBMj-NEK6NsAn-ReJLN-tyjFXQnI3FxHPKOmbnoOqiWrW3-kxhGb4c1IVDFGMrBcKBX-ANoZB/pub?gid=0&single=true&output=csv';
 
-// Elemen DOM
 const tanggalInput = document.getElementById("tanggal");
 const pasaranInput = document.getElementById("pasaran");
 const resultInput = document.getElementById("result");
 const loader = document.getElementById("loader");
-const form = document.getElementById("predictionForm");
-const output = document.getElementById("output");
 
-// Ambil Result dari Sheet
+function formatTanggal(tgl) {
+  const d = new Date(tgl);
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
 async function ambilResult() {
-  if (!tanggalInput.value || !pasaranInput.value) return;
-
   const tanggal = formatTanggal(tanggalInput.value);
   const pasaran = pasaranInput.value;
+  if (!tanggal || !pasaran) return;
+
   loader.style.display = "block";
 
   try {
@@ -66,18 +65,19 @@ async function ambilResult() {
   }
 }
 
-// Event saat input berubah
 tanggalInput.addEventListener("change", ambilResult);
 pasaranInput.addEventListener("change", ambilResult);
 
-// Prediksi
+const form = document.getElementById("predictionForm");
+const output = document.getElementById("output");
+
 form.addEventListener("submit", function(e) {
   e.preventDefault();
   const result = resultInput.value.trim();
   const pasaran = pasaranInput.value;
   const tanggal = formatTanggal(tanggalInput.value);
 
-  if (!/^\d{4}$/.test(result)) {
+  if (!/^[0-9]{4}$/.test(result)) {
     alert("Masukkan 4 digit angka!");
     return;
   }
@@ -120,7 +120,7 @@ form.addEventListener("submit", function(e) {
   const top15 = enhanced2D.filter((_, i) => i % 2 === 0).slice(0, 15);
 
   const teks = `📍 Pasaran: ${pasaran}
-📅 Tanggal: ${tanggal}
+🗕️ Tanggal: ${tanggal}
 
 🔢 Pecah Digit:
 ${digits.join(' – ')}
@@ -162,13 +162,11 @@ ${top15.join(', ')}
   output.innerText = teks;
 });
 
-// Tombol Reset
 document.getElementById("resetBtn").addEventListener("click", () => {
   form.reset();
   output.innerText = "";
 });
 
-// Download PDF
 document.getElementById("downloadBtn").addEventListener("click", () => {
   if (!output.innerText.trim()) return alert("Harap proses result dahulu!");
 
@@ -179,7 +177,7 @@ document.getElementById("downloadBtn").addEventListener("click", () => {
 
   html2pdf().set({
     margin: 0.5,
-    filename: "prediksi-4d.pdf",
+    filename: "prediksi-2d.pdf",
     image: { type: "jpeg", quality: 0.98 },
     html2canvas: { scale: 2 },
     jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
