@@ -17,7 +17,7 @@ function updateClock() {
   };
   
   // Ambil result dari Google Sheet
-  const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREhD2GBMj-NEK6NsAn-ReJLN-tyjFXQnI3FxHPKOmbnoOqiWrW3-kxhGb4c1IVDFGMrBcKBX-ANoZB/pubhtml?gid=0&single=true';
+  const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREhD2GBMj-NEK6NsAn-ReJLN-tyjFXQnI3FxHPKOmbnoOqiWrW3-kxhGb4c1IVDFGMrBcKBX-ANoZB/pub?gid=0&single=true&output=csv';
   
   const tanggalInput = document.getElementById("tanggal");
   const pasaranInput = document.getElementById("pasaran");
