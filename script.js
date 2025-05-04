@@ -6,7 +6,7 @@ function updateClock() {
 setInterval(updateClock, 1000);
 updateClock();
 
-// Fungsi format tanggal ke DD/MM/YYYY
+// Fungsi Format Tanggal ke DD/MM/YYYY
 function formatTanggal(tgl) {
   const [year, month, day] = tgl.split("-");
   return `${day}/${month}/${year}`;
@@ -22,18 +22,22 @@ const tables = {
   m9:        { '0': '1', '1': '9', '2': '6', '3': '5', '4': '3', '5': '2', '6': '4', '7': '7', '8': '8', '9': '0' }
 };
 
-// Ambil result dari Google Sheet
+// URL Google Sheet CSV
 const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vREhD2GBMj-NEK6NsAn-ReJLN-tyjFXQnI3FxHPKOmbnoOqiWrW3-kxhGb4c1IVDFGMrBcKBX-ANoZB/pub?gid=0&single=true&output=csv';
 
+// Elemen DOM
 const tanggalInput = document.getElementById("tanggal");
 const pasaranInput = document.getElementById("pasaran");
 const resultInput = document.getElementById("result");
 const loader = document.getElementById("loader");
+const form = document.getElementById("predictionForm");
+const output = document.getElementById("output");
 
+// Ambil Result dari Sheet
 async function ambilResult() {
   if (!tanggalInput.value || !pasaranInput.value) return;
 
-  const tanggal = formatTanggal(tanggalInput.value); // ← sudah diformat ke DD/MM/YYYY
+  const tanggal = formatTanggal(tanggalInput.value);
   const pasaran = pasaranInput.value;
   loader.style.display = "block";
 
@@ -62,8 +66,122 @@ async function ambilResult() {
   }
 }
 
-// Event listeners
+// Event saat input berubah
 tanggalInput.addEventListener("change", ambilResult);
 pasaranInput.addEventListener("change", ambilResult);
 
-// ... (kode selanjutnya tetap sama, mulai dari prediksi, reset, hingga download PDF)
+// Prediksi
+form.addEventListener("submit", function(e) {
+  e.preventDefault();
+  const result = resultInput.value.trim();
+  const pasaran = pasaranInput.value;
+  const tanggal = formatTanggal(tanggalInput.value);
+
+  if (!/^\d{4}$/.test(result)) {
+    alert("Masukkan 4 digit angka!");
+    return;
+  }
+
+  const digits = result.split('');
+  const [as, kop] = [parseInt(digits[0]), parseInt(digits[1])];
+
+  const detailPerTabel = {};
+  const semuaAngka = [];
+
+  for (const [key, table] of Object.entries(tables)) {
+    const hasil = digits.map(d => `${d} → ${table[d]}`);
+    const final = [...new Set(digits.map(d => table[d]))];
+    detailPerTabel[key] = { hasil, final };
+    semuaAngka.push(...final);
+  }
+
+  const angkaUnik = [...new Set(semuaAngka)];
+  const bbfs = angkaUnik.filter(a => a !== '8');
+
+  const count = {};
+  semuaAngka.forEach(d => count[d] = (count[d] || 0) + 1);
+  const colokBebas = Object.entries(count).filter(([_, v]) => v >= 3).map(([k]) => k);
+
+  const kenaikan = [];
+  for (let i = 0; i <= 4; i++) {
+    const naikAS = (as + i) % 10;
+    const naikKOP = (kop + i) % 10;
+    kenaikan.push([naikAS, naikKOP]);
+  }
+
+  const enhanced2D = kenaikan.flatMap(([a]) => {
+    return Array.from({length: 10}, (_, i) => `${a}${i}`);
+  });
+
+  const top25 = enhanced2D.slice(0, 20).concat([
+    `${as}3`, `${(as+1)%10}3`, `${(as+2)%10}3`, `${(as+3)%10}3`, `${(as+4)%10}3`
+  ]);
+
+  const top15 = enhanced2D.filter((_, i) => i % 2 === 0).slice(0, 15);
+
+  const teks = `📍 Pasaran: ${pasaran}
+📅 Tanggal: ${tanggal}
+
+🔢 Pecah Digit:
+${digits.join(' – ')}
+➡️ AS = ${as}, KOP = ${kop}
+
+📌 Tabel Bahasa Online:
+${Object.entries(detailPerTabel).map(([key, val], i) => `${i+1}. ${key.toUpperCase()}
+${val.hasil.join('\n')}
+➡️ ${key.toUpperCase()} Final: ${val.final.join(', ')}`).join('\n\n')}
+
+✅ Gabungan Angka Unik:
+${angkaUnik.join(', ')}
+➡️ BBFS Final: ${bbfs.join(' – ')}
+
+🔘 Colok Bebas (Dominan):
+➡️ ${colokBebas.join(' – ')}
+
+🔁 Kenaikan AS–KOP:
+AS = ${as}, KOP = ${kop}
++1 hingga +4:
+${kenaikan.slice(1).map(([a, k], i) => `+${i+1}\t${a}\t${k}`).join('\n')}
+
+✅ Enhanced 2D – 40 Line:
+${enhanced2D.join(', ')}
+
+🔝 TOP 25 Line:
+${top25.join(', ')}
+
+🔝 TOP 15 Line:
+${top15.join(', ')}
+
+📦 Rangkuman Final:
+✅ BBFS: ${bbfs.join(' – ')}
+✅ Colok Bebas: ${colokBebas.join(' – ')}
+✅ Enhanced 2D (40 line)
+✅ TOP 25 Line
+✅ TOP 15 Line`;
+
+  output.innerText = teks;
+});
+
+// Tombol Reset
+document.getElementById("resetBtn").addEventListener("click", () => {
+  form.reset();
+  output.innerText = "";
+});
+
+// Download PDF
+document.getElementById("downloadBtn").addEventListener("click", () => {
+  if (!output.innerText.trim()) return alert("Harap proses result dahulu!");
+
+  const div = document.createElement("div");
+  div.style.whiteSpace = "pre-wrap";
+  div.style.fontFamily = "monospace";
+  div.innerText = output.innerText;
+
+  html2pdf().set({
+    margin: 0.5,
+    filename: "prediksi-4d.pdf",
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
+  }).from(div).save();
+});
